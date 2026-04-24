@@ -1,0 +1,9 @@
+{
+  "name": "EduCore - College Management System",
+  "description": "A comprehensive, role-based college management portal for Students, Teachers, and Admins. Features include academic resource sharing, attendance tracking, marks management, and real-time announcements.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

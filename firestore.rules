@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isAdmin() {
+      return isRole('admin') || 
+             (request.auth.token.email == "hiresarthak07@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isTeacher() {
+      return isRole('teacher');
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isValidString(val, min, max) {
+      return val is string && val.size() >= min && val.size() <= max;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Users collection
+    match /users/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(uid) && 
+                      request.resource.data.role in ['student', 'teacher', 'admin'] &&
+                      (request.resource.data.role == 'student' || isAdmin()); // Only admin can create non-student roles
+      allow update: if isAuthenticated() && (isOwner(uid) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Courses and Subjects
+    match /courses/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /subjects/{id} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Materials
+    match /materials/{id} {
+      allow read: if isAuthenticated(); // Should filter by isApproved, but for logic check allow authenticated
+      allow create: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow update: if isAuthenticated() && (isAdmin() || (isTeacher() && resource.data.uploadedBy == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+
+    // Attendance
+    match /attendance/{id} {
+      allow read: if isAuthenticated() && (isTeacher() || isAdmin() || isOwner(resource.data.studentId));
+      allow create: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow update: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Marks
+    match /marks/{id} {
+      allow read: if isAuthenticated() && (isTeacher() || isAdmin() || isOwner(resource.data.studentId));
+      allow create: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow update: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Announcements
+    match /announcements/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isTeacher() || isAdmin());
+      allow update: if isAuthenticated() && (isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+  }
+}

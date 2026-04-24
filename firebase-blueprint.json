@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user with specific role and profile details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student"] },
+        "branch": { "type": "string" },
+        "semester": { "type": "number" },
+        "studentId": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Academic course details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "branch": { "type": "string" },
+        "duration": { "type": "number" }
+      },
+      "required": ["name", "branch"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Specific subject within a course and semester",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "courseId": { "type": "string" },
+        "semester": { "type": "number" },
+        "syllabusUrl": { "type": "string" }
+      },
+      "required": ["name", "courseId", "semester"]
+    },
+    "Material": {
+      "title": "Material",
+      "description": "Academic resources like notes, PYQs, assignments",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["notes", "pyq", "assignment", "syllabus"] },
+        "fileUrl": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "uploadedBy": { "type": "string" },
+        "isApproved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "fileUrl", "subjectId", "uploadedBy"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record for students",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["present", "absent"] },
+        "markedBy": { "type": "string" }
+      },
+      "required": ["studentId", "subjectId", "date", "status"]
+    },
+    "Mark": {
+      "title": "Mark",
+      "description": "Examination marks for students",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "type": { "type": "string", "enum": ["internal", "external", "assignment"] },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "enteredBy": { "type": "string" }
+      },
+      "required": ["studentId", "subjectId", "type", "score", "total"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Notifications and notices for members",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "targetRole": { "type": "string", "enum": ["all", "student", "teacher"] },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "targetRole"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "User", "description": "User profiles" },
+    "/courses/{courseId}": { "schema": "Course", "description": "List of courses" },
+    "/subjects/{subjectId}": { "schema": "Subject", "description": "Subject definitions" },
+    "/materials/{materialId}": { "schema": "Material", "description": "Study materials" },
+    "/attendance/{attendanceId}": { "schema": "Attendance", "description": "Daily attendance records" },
+    "/marks/{markId}": { "schema": "Mark", "description": "Student marks" },
+    "/announcements/{announcementId}": { "schema": "Announcement", "description": "System-wide notices" }
+  }
+}
